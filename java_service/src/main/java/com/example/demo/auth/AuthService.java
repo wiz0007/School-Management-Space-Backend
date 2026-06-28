@@ -1,6 +1,7 @@
 package com.example.demo.auth;
 
 import com.example.demo.auth.dto.AuthResponse;
+import com.example.demo.auth.dto.AuthSession;
 import com.example.demo.auth.dto.LoginRequest;
 import com.example.demo.auth.dto.RegisterRequest;
 import com.example.demo.auth.dto.UserProfileResponse;
@@ -18,15 +19,22 @@ public class AuthService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtService jwtService;
+	private final RefreshTokenService refreshTokenService;
 
-	public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+	public AuthService(
+			UserRepository userRepository,
+			PasswordEncoder passwordEncoder,
+			JwtService jwtService,
+			RefreshTokenService refreshTokenService
+	) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.jwtService = jwtService;
+		this.refreshTokenService = refreshTokenService;
 	}
 
 	@Transactional
-	public AuthResponse register(RegisterRequest request) {
+	public AuthSession register(RegisterRequest request) {
 		String email = normalizeEmail(request.email());
 		if (userRepository.existsByEmail(email)) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already registered");
@@ -38,11 +46,11 @@ public class AuthService {
 		user.setPasswordHash(passwordEncoder.encode(request.password()));
 
 		UserAccount savedUser = userRepository.save(user);
-		return responseFor(savedUser);
+		return sessionFor(savedUser);
 	}
 
 	@Transactional(readOnly = true)
-	public AuthResponse login(LoginRequest request) {
+	public AuthSession login(LoginRequest request) {
 		UserAccount user = userRepository.findByEmail(normalizeEmail(request.email()))
 				.filter(UserAccount::isEnabled)
 				.orElseThrow(() -> invalidCredentials());
@@ -51,14 +59,38 @@ public class AuthService {
 			throw invalidCredentials();
 		}
 
-		return responseFor(user);
+		return sessionFor(user);
+	}
+
+	@Transactional
+	public AuthSession refresh(String refreshToken) {
+		RefreshTokenService.RefreshRotation rotation = refreshTokenService.rotate(refreshToken);
+		return new AuthSession(
+				rotation.accessToken(),
+				rotation.refreshToken(),
+				responseFor(rotation.user())
+		);
+	}
+
+	@Transactional
+	public void logout(String refreshToken) {
+		if (refreshToken != null && !refreshToken.isBlank()) {
+			refreshTokenService.revoke(refreshToken);
+		}
+	}
+
+	private AuthSession sessionFor(UserAccount user) {
+		return new AuthSession(
+				jwtService.createAccessToken(user),
+				refreshTokenService.issue(user),
+				responseFor(user)
+		);
 	}
 
 	private AuthResponse responseFor(UserAccount user) {
 		return new AuthResponse(
-				jwtService.createAccessToken(user),
-				"Bearer",
 				jwtService.expiresInSeconds(),
+				jwtService.refreshExpiresInSeconds(),
 				UserProfileResponse.from(user)
 		);
 	}
