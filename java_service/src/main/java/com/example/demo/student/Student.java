@@ -1,6 +1,7 @@
 package com.example.demo.student;
 
 import com.example.demo.school.SchoolProfile;
+import com.example.demo.schoolclass.SchoolClass;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -22,6 +23,7 @@ import java.util.UUID;
 		name = "students",
 		indexes = {
 				@Index(name = "idx_students_school", columnList = "school_profile_id"),
+				@Index(name = "idx_students_class", columnList = "school_class_id"),
 				@Index(name = "idx_students_admission_number", columnList = "school_profile_id,admissionNumber", unique = true)
 		}
 )
@@ -33,6 +35,10 @@ public class Student {
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "school_profile_id", nullable = false)
 	private SchoolProfile schoolProfile;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "school_class_id")
+	private SchoolClass assignedClass;
 
 	@Column(nullable = false, length = 120)
 	private String fullName;
@@ -87,6 +93,8 @@ public class Student {
 	public UUID getId() { return id; }
 	public SchoolProfile getSchoolProfile() { return schoolProfile; }
 	public void setSchoolProfile(SchoolProfile schoolProfile) { this.schoolProfile = schoolProfile; }
+	public SchoolClass getAssignedClass() { return assignedClass; }
+	public void setAssignedClass(SchoolClass assignedClass) { this.assignedClass = assignedClass; }
 	public String getFullName() { return fullName; }
 	public void setFullName(String fullName) { this.fullName = clean(fullName); }
 	public String getAdmissionNumber() { return admissionNumber; }

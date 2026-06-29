@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.UUID;
 
 public record StudentRequest(
 		@NotBlank(message = "Student name is required")
@@ -16,6 +17,8 @@ public record StudentRequest(
 		@NotBlank(message = "Admission number is required")
 		@Size(max = 40, message = "Admission number must be 40 characters or fewer")
 		String admissionNumber,
+
+		UUID classId,
 
 		@NotBlank(message = "Class is required")
 		@Size(max = 80, message = "Class must be 80 characters or fewer")

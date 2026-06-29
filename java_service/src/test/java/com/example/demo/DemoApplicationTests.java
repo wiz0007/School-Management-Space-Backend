@@ -1,7 +1,9 @@
 package com.example.demo;
 
+import com.example.demo.attendance.AttendanceRepository;
 import com.example.demo.auth.RefreshTokenRepository;
 import com.example.demo.school.SchoolProfileRepository;
+import com.example.demo.schoolclass.SchoolClassRepository;
 import com.example.demo.staff.StaffRepository;
 import com.example.demo.student.StudentRepository;
 import com.example.demo.user.UserRepository;
@@ -43,6 +45,16 @@ class DemoApplicationTests {
 		@Bean
 		StaffRepository staffRepository() {
 			return Mockito.mock(StaffRepository.class);
+		}
+
+		@Bean
+		SchoolClassRepository schoolClassRepository() {
+			return Mockito.mock(SchoolClassRepository.class);
+		}
+
+		@Bean
+		AttendanceRepository attendanceRepository() {
+			return Mockito.mock(AttendanceRepository.class);
 		}
 	}
 }
