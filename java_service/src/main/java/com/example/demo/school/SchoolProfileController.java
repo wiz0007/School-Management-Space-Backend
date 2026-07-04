@@ -6,6 +6,7 @@ import com.example.demo.school.dto.SchoolProfileResponse;
 import com.example.demo.user.UserAccount;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -23,6 +24,7 @@ public class SchoolProfileController {
 	}
 
 	@GetMapping
+	@PreAuthorize("hasAuthority(T(com.example.demo.security.PermissionAuthority).SCHOOL_PROFILE_READ)")
 	public ApiResponse<SchoolProfileResponse> getProfile(
 			@AuthenticationPrincipal UserAccount user,
 			HttpServletRequest request
@@ -35,6 +37,7 @@ public class SchoolProfileController {
 	}
 
 	@PutMapping
+	@PreAuthorize("hasAuthority(T(com.example.demo.security.PermissionAuthority).SCHOOL_PROFILE_WRITE)")
 	public ApiResponse<SchoolProfileResponse> saveProfile(
 			@AuthenticationPrincipal UserAccount user,
 			@Valid @RequestBody SchoolProfileRequest profileRequest,

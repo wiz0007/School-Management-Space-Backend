@@ -5,12 +5,11 @@ import com.example.demo.attendance.dto.AttendanceRecordResponse;
 import com.example.demo.attendance.dto.AttendanceRosterStudentResponse;
 import com.example.demo.attendance.dto.AttendanceSaveRequest;
 import com.example.demo.school.SchoolProfile;
-import com.example.demo.school.SchoolProfileRepository;
 import com.example.demo.schoolclass.SchoolClass;
-import com.example.demo.schoolclass.SchoolClassRepository;
 import com.example.demo.student.Student;
 import com.example.demo.student.StudentRepository;
 import com.example.demo.user.UserAccount;
+import com.example.demo.workspace.WorkspaceAccessService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -25,20 +24,17 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class AttendanceService {
 	private final AttendanceRepository attendanceRepository;
-	private final SchoolProfileRepository schoolProfileRepository;
-	private final SchoolClassRepository schoolClassRepository;
 	private final StudentRepository studentRepository;
+	private final WorkspaceAccessService workspaceAccessService;
 
 	public AttendanceService(
 			AttendanceRepository attendanceRepository,
-			SchoolProfileRepository schoolProfileRepository,
-			SchoolClassRepository schoolClassRepository,
-			StudentRepository studentRepository
+			StudentRepository studentRepository,
+			WorkspaceAccessService workspaceAccessService
 	) {
 		this.attendanceRepository = attendanceRepository;
-		this.schoolProfileRepository = schoolProfileRepository;
-		this.schoolClassRepository = schoolClassRepository;
 		this.studentRepository = studentRepository;
+		this.workspaceAccessService = workspaceAccessService;
 	}
 
 	@Transactional(readOnly = true)
@@ -84,8 +80,7 @@ public class AttendanceService {
 		SchoolClass schoolClass = classFor(schoolProfile, request.classId());
 
 		for (AttendanceEntryRequest entry : request.entries()) {
-			Student student = studentRepository.findByIdAndSchoolProfile(entry.studentId(), schoolProfile)
-					.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student must belong to this school."));
+			Student student = workspaceAccessService.requireStudent(schoolProfile, entry.studentId(), "Student must belong to this school.");
 			if (student.getAssignedClass() == null || !student.getAssignedClass().getId().equals(schoolClass.getId())) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student must be assigned to the selected class.");
 			}
@@ -106,12 +101,10 @@ public class AttendanceService {
 	}
 
 	private SchoolProfile schoolProfileFor(UserAccount owner) {
-		return schoolProfileRepository.findByOwner(owner)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.PRECONDITION_REQUIRED, "Create the school profile before marking attendance."));
+		return workspaceAccessService.requireSchoolProfile(owner, "Create the school profile before marking attendance.");
 	}
 
 	private SchoolClass classFor(SchoolProfile schoolProfile, UUID classId) {
-		return schoolClassRepository.findByIdAndSchoolProfile(classId, schoolProfile)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Class must belong to this school."));
+		return workspaceAccessService.requireClass(schoolProfile, classId, "Class must belong to this school.");
 	}
 }

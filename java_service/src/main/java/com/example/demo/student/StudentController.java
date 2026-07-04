@@ -7,6 +7,7 @@ import com.example.demo.user.UserAccount;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,7 @@ public class StudentController {
 	}
 
 	@GetMapping
+	@PreAuthorize("hasAuthority(T(com.example.demo.security.PermissionAuthority).STUDENT_READ)")
 	public ApiResponse<List<StudentResponse>> list(
 			@AuthenticationPrincipal UserAccount user,
 			HttpServletRequest request
@@ -32,6 +34,7 @@ public class StudentController {
 	}
 
 	@PostMapping
+	@PreAuthorize("hasAuthority(T(com.example.demo.security.PermissionAuthority).STUDENT_WRITE)")
 	public ApiResponse<StudentResponse> create(
 			@AuthenticationPrincipal UserAccount user,
 			@Valid @RequestBody StudentRequest studentRequest,

@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +28,7 @@ public class StaffController {
 	}
 
 	@GetMapping
+	@PreAuthorize("hasAuthority(T(com.example.demo.security.PermissionAuthority).STAFF_READ)")
 	public ApiResponse<List<StaffResponse>> list(
 			@AuthenticationPrincipal UserAccount user,
 			HttpServletRequest request
@@ -35,6 +37,7 @@ public class StaffController {
 	}
 
 	@PostMapping
+	@PreAuthorize("hasAuthority(T(com.example.demo.security.PermissionAuthority).STAFF_WRITE)")
 	public ApiResponse<StaffResponse> create(
 			@AuthenticationPrincipal UserAccount user,
 			@Valid @RequestBody StaffRequest staffRequest,
@@ -44,6 +47,7 @@ public class StaffController {
 	}
 
 	@PutMapping("/{id}")
+	@PreAuthorize("hasAuthority(T(com.example.demo.security.PermissionAuthority).STAFF_WRITE)")
 	public ApiResponse<StaffResponse> update(
 			@AuthenticationPrincipal UserAccount user,
 			@PathVariable UUID id,

@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +30,7 @@ public class AttendanceController {
 	}
 
 	@GetMapping("/roster")
+	@PreAuthorize("hasAuthority(T(com.example.demo.security.PermissionAuthority).ATTENDANCE_READ)")
 	public ApiResponse<List<AttendanceRosterStudentResponse>> roster(
 			@AuthenticationPrincipal UserAccount user,
 			@RequestParam UUID classId,
@@ -39,6 +41,7 @@ public class AttendanceController {
 	}
 
 	@GetMapping
+	@PreAuthorize("hasAuthority(T(com.example.demo.security.PermissionAuthority).ATTENDANCE_READ)")
 	public ApiResponse<List<AttendanceRecordResponse>> records(
 			@AuthenticationPrincipal UserAccount user,
 			@RequestParam UUID classId,
@@ -49,6 +52,7 @@ public class AttendanceController {
 	}
 
 	@PostMapping
+	@PreAuthorize("hasAuthority(T(com.example.demo.security.PermissionAuthority).ATTENDANCE_WRITE)")
 	public ApiResponse<List<AttendanceRecordResponse>> save(
 			@AuthenticationPrincipal UserAccount user,
 			@Valid @RequestBody AttendanceSaveRequest saveRequest,

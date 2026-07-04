@@ -20,7 +20,9 @@ import java.util.UUID;
 		name = "refresh_tokens",
 		indexes = {
 				@Index(name = "idx_refresh_token_hash", columnList = "tokenHash", unique = true),
-				@Index(name = "idx_refresh_token_user", columnList = "user_id")
+				@Index(name = "idx_refresh_token_user", columnList = "user_id"),
+				@Index(name = "idx_refresh_token_family", columnList = "tokenFamilyId"),
+				@Index(name = "idx_refresh_token_jti", columnList = "tokenId", unique = true)
 		}
 )
 public class RefreshToken {
@@ -35,6 +37,15 @@ public class RefreshToken {
 	@Column(nullable = false, unique = true, length = 128)
 	private String tokenHash;
 
+	@Column(nullable = false, unique = true, length = 80)
+	private String tokenId;
+
+	@Column(nullable = false, length = 80)
+	private String tokenFamilyId;
+
+	@Column(length = 128)
+	private String replacedByTokenHash;
+
 	@Column(nullable = false)
 	private Instant expiresAt;
 
@@ -44,7 +55,15 @@ public class RefreshToken {
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
+	private Instant lastUsedAt;
 	private Instant revokedAt;
+	private Instant reuseDetectedAt;
+
+	@Column(length = 64)
+	private String ipAddress;
+
+	@Column(length = 512)
+	private String userAgent;
 
 	@PrePersist
 	void onCreate() {
@@ -71,6 +90,30 @@ public class RefreshToken {
 		this.tokenHash = tokenHash;
 	}
 
+	public String getTokenId() {
+		return tokenId;
+	}
+
+	public void setTokenId(String tokenId) {
+		this.tokenId = tokenId;
+	}
+
+	public String getTokenFamilyId() {
+		return tokenFamilyId;
+	}
+
+	public void setTokenFamilyId(String tokenFamilyId) {
+		this.tokenFamilyId = tokenFamilyId;
+	}
+
+	public String getReplacedByTokenHash() {
+		return replacedByTokenHash;
+	}
+
+	public void setReplacedByTokenHash(String replacedByTokenHash) {
+		this.replacedByTokenHash = replacedByTokenHash;
+	}
+
 	public Instant getExpiresAt() {
 		return expiresAt;
 	}
@@ -88,12 +131,49 @@ public class RefreshToken {
 		revokedAt = Instant.now();
 	}
 
+	public void revoke(String replacementHash) {
+		replacedByTokenHash = replacementHash;
+		revoke();
+	}
+
 	public Instant getCreatedAt() {
 		return createdAt;
 	}
 
+	public Instant getLastUsedAt() {
+		return lastUsedAt;
+	}
+
+	public void markUsed() {
+		lastUsedAt = Instant.now();
+	}
+
 	public Instant getRevokedAt() {
 		return revokedAt;
+	}
+
+	public Instant getReuseDetectedAt() {
+		return reuseDetectedAt;
+	}
+
+	public void markReuseDetected() {
+		reuseDetectedAt = Instant.now();
+	}
+
+	public String getIpAddress() {
+		return ipAddress;
+	}
+
+	public void setIpAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
+	}
+
+	public String getUserAgent() {
+		return userAgent;
+	}
+
+	public void setUserAgent(String userAgent) {
+		this.userAgent = userAgent;
 	}
 
 	public boolean isActive() {

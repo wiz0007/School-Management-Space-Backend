@@ -1,12 +1,12 @@
 package com.example.demo.schoolclass;
 
 import com.example.demo.school.SchoolProfile;
-import com.example.demo.school.SchoolProfileRepository;
 import com.example.demo.schoolclass.dto.SchoolClassRequest;
 import com.example.demo.schoolclass.dto.SchoolClassResponse;
 import com.example.demo.staff.StaffMember;
 import com.example.demo.staff.StaffRepository;
 import com.example.demo.user.UserAccount;
+import com.example.demo.workspace.WorkspaceAccessService;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -17,17 +17,17 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class SchoolClassService {
 	private final SchoolClassRepository schoolClassRepository;
-	private final SchoolProfileRepository schoolProfileRepository;
 	private final StaffRepository staffRepository;
+	private final WorkspaceAccessService workspaceAccessService;
 
 	public SchoolClassService(
 			SchoolClassRepository schoolClassRepository,
-			SchoolProfileRepository schoolProfileRepository,
-			StaffRepository staffRepository
+			StaffRepository staffRepository,
+			WorkspaceAccessService workspaceAccessService
 	) {
 		this.schoolClassRepository = schoolClassRepository;
-		this.schoolProfileRepository = schoolProfileRepository;
 		this.staffRepository = staffRepository;
+		this.workspaceAccessService = workspaceAccessService;
 	}
 
 	@Transactional(readOnly = true)
@@ -52,16 +52,14 @@ public class SchoolClassService {
 	@Transactional
 	public SchoolClassResponse update(UserAccount owner, UUID id, SchoolClassRequest request) {
 		SchoolProfile schoolProfile = schoolProfileFor(owner);
-		SchoolClass schoolClass = schoolClassRepository.findByIdAndSchoolProfile(id, schoolProfile)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Class record not found."));
+		SchoolClass schoolClass = workspaceAccessService.requireClass(schoolProfile, id, "Class record not found.");
 		ensureUniqueSection(schoolProfile, request, schoolClass.getId());
 		apply(schoolClass, schoolProfile, request);
 		return SchoolClassResponse.from(schoolClassRepository.save(schoolClass));
 	}
 
 	private SchoolProfile schoolProfileFor(UserAccount owner) {
-		return schoolProfileRepository.findByOwner(owner)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.PRECONDITION_REQUIRED, "Create the school profile before adding classes."));
+		return workspaceAccessService.requireSchoolProfile(owner, "Create the school profile before adding classes.");
 	}
 
 	private void ensureUniqueSection(SchoolProfile schoolProfile, SchoolClassRequest request, UUID currentId) {

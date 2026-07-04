@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +28,7 @@ public class SchoolClassController {
 	}
 
 	@GetMapping
+	@PreAuthorize("hasAuthority(T(com.example.demo.security.PermissionAuthority).CLASS_READ)")
 	public ApiResponse<List<SchoolClassResponse>> list(
 			@AuthenticationPrincipal UserAccount user,
 			HttpServletRequest request
@@ -35,6 +37,7 @@ public class SchoolClassController {
 	}
 
 	@PostMapping
+	@PreAuthorize("hasAuthority(T(com.example.demo.security.PermissionAuthority).CLASS_WRITE)")
 	public ApiResponse<SchoolClassResponse> create(
 			@AuthenticationPrincipal UserAccount user,
 			@Valid @RequestBody SchoolClassRequest classRequest,
@@ -44,6 +47,7 @@ public class SchoolClassController {
 	}
 
 	@PutMapping("/{id}")
+	@PreAuthorize("hasAuthority(T(com.example.demo.security.PermissionAuthority).CLASS_WRITE)")
 	public ApiResponse<SchoolClassResponse> update(
 			@AuthenticationPrincipal UserAccount user,
 			@PathVariable UUID id,

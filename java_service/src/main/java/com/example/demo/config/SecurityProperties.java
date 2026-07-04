@@ -12,7 +12,14 @@ public record SecurityProperties(
 		Duration jwtRefreshExpiration,
 		String authCookieName,
 		String refreshCookieName,
-		boolean authCookieSecure
+		boolean authCookieSecure,
+		Duration loginFailureWindow,
+		int loginEmailFailureLimit,
+		int loginIpFailureLimit,
+		Duration emailVerificationExpiration,
+		Duration passwordResetExpiration,
+		String publicFrontendUrl,
+		boolean accountTokenDevDeliveryEnabled
 ) {
 	public SecurityProperties {
 		rateLimitCapacity = rateLimitCapacity <= 0 ? 120 : rateLimitCapacity;
@@ -28,5 +35,13 @@ public record SecurityProperties(
 		refreshCookieName = refreshCookieName == null || refreshCookieName.isBlank()
 				? "schoolsys_refresh"
 				: refreshCookieName;
+		loginFailureWindow = loginFailureWindow == null ? Duration.ofMinutes(15) : loginFailureWindow;
+		loginEmailFailureLimit = loginEmailFailureLimit <= 0 ? 5 : loginEmailFailureLimit;
+		loginIpFailureLimit = loginIpFailureLimit <= 0 ? 20 : loginIpFailureLimit;
+		emailVerificationExpiration = emailVerificationExpiration == null ? Duration.ofHours(24) : emailVerificationExpiration;
+		passwordResetExpiration = passwordResetExpiration == null ? Duration.ofMinutes(30) : passwordResetExpiration;
+		publicFrontendUrl = publicFrontendUrl == null || publicFrontendUrl.isBlank()
+				? "http://localhost:4200"
+				: publicFrontendUrl;
 	}
 }

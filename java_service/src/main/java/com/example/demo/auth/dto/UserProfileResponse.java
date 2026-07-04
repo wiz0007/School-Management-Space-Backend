@@ -10,6 +10,8 @@ public record UserProfileResponse(
 		String fullName,
 		String email,
 		UserRole role,
+		boolean emailVerified,
+		Instant emailVerifiedAt,
 		Instant createdAt
 ) {
 	public static UserProfileResponse from(UserAccount user) {
@@ -18,6 +20,8 @@ public record UserProfileResponse(
 				user.getFullName(),
 				user.getEmail(),
 				user.getRole(),
+				user.isEmailVerified(),
+				user.getEmailVerifiedAt(),
 				user.getCreatedAt()
 		);
 	}

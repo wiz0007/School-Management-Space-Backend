@@ -36,6 +36,11 @@ public class UserAccount {
 	@Column(nullable = false)
 	private boolean enabled = true;
 
+	@Column(nullable = false)
+	private boolean emailVerified = false;
+
+	private Instant emailVerifiedAt;
+
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -54,6 +59,11 @@ public class UserAccount {
 	void onUpdate() {
 		updatedAt = Instant.now();
 		email = normalizeEmail(email);
+	}
+
+	public void markEmailVerified() {
+		emailVerified = true;
+		emailVerifiedAt = Instant.now();
 	}
 
 	public UUID getId() {
@@ -98,6 +108,22 @@ public class UserAccount {
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
+	}
+
+	public boolean isEmailVerified() {
+		return emailVerified;
+	}
+
+	public void setEmailVerified(boolean emailVerified) {
+		this.emailVerified = emailVerified;
+	}
+
+	public Instant getEmailVerifiedAt() {
+		return emailVerifiedAt;
+	}
+
+	public void setEmailVerifiedAt(Instant emailVerifiedAt) {
+		this.emailVerifiedAt = emailVerifiedAt;
 	}
 
 	public Instant getCreatedAt() {

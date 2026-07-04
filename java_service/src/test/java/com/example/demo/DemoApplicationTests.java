@@ -1,6 +1,9 @@
 package com.example.demo;
 
 import com.example.demo.attendance.AttendanceRepository;
+import com.example.demo.audit.AuditLogRepository;
+import com.example.demo.auth.AccountTokenRepository;
+import com.example.demo.auth.LoginAttemptRepository;
 import com.example.demo.auth.RefreshTokenRepository;
 import com.example.demo.school.SchoolProfileRepository;
 import com.example.demo.schoolclass.SchoolClassRepository;
@@ -9,9 +12,9 @@ import com.example.demo.student.StudentRepository;
 import com.example.demo.user.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class DemoApplicationTests {
@@ -30,6 +33,21 @@ class DemoApplicationTests {
 		@Bean
 		RefreshTokenRepository refreshTokenRepository() {
 			return Mockito.mock(RefreshTokenRepository.class);
+		}
+
+		@Bean
+		AccountTokenRepository accountTokenRepository() {
+			return Mockito.mock(AccountTokenRepository.class);
+		}
+
+		@Bean
+		LoginAttemptRepository loginAttemptRepository() {
+			return Mockito.mock(LoginAttemptRepository.class);
+		}
+
+		@Bean
+		AuditLogRepository auditLogRepository() {
+			return Mockito.mock(AuditLogRepository.class);
 		}
 
 		@Bean

@@ -1,12 +1,12 @@
 package com.example.demo.student;
 
 import com.example.demo.school.SchoolProfile;
-import com.example.demo.school.SchoolProfileRepository;
 import com.example.demo.schoolclass.SchoolClass;
 import com.example.demo.schoolclass.SchoolClassRepository;
 import com.example.demo.student.dto.StudentRequest;
 import com.example.demo.student.dto.StudentResponse;
 import com.example.demo.user.UserAccount;
+import com.example.demo.workspace.WorkspaceAccessService;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -17,17 +17,17 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class StudentService {
 	private final StudentRepository studentRepository;
-	private final SchoolProfileRepository schoolProfileRepository;
 	private final SchoolClassRepository schoolClassRepository;
+	private final WorkspaceAccessService workspaceAccessService;
 
 	public StudentService(
 			StudentRepository studentRepository,
-			SchoolProfileRepository schoolProfileRepository,
-			SchoolClassRepository schoolClassRepository
+			SchoolClassRepository schoolClassRepository,
+			WorkspaceAccessService workspaceAccessService
 	) {
 		this.studentRepository = studentRepository;
-		this.schoolProfileRepository = schoolProfileRepository;
 		this.schoolClassRepository = schoolClassRepository;
+		this.workspaceAccessService = workspaceAccessService;
 	}
 
 	@Transactional(readOnly = true)
@@ -54,8 +54,7 @@ public class StudentService {
 	}
 
 	private SchoolProfile schoolProfileFor(UserAccount owner) {
-		return schoolProfileRepository.findByOwner(owner)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.PRECONDITION_REQUIRED, "Create the school profile before adding students."));
+		return workspaceAccessService.requireSchoolProfile(owner, "Create the school profile before adding students.");
 	}
 
 	private void apply(Student student, SchoolProfile schoolProfile, StudentRequest request) {
